@@ -8,6 +8,7 @@ gsap.registerPlugin(ScrollTrigger);
 export const Hero: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const handWrapperRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const eyebrowRef = useRef<HTMLDivElement>(null);
   const headingLine1Ref = useRef<HTMLDivElement>(null);
   const headingLine2Ref = useRef<HTMLDivElement>(null);
@@ -64,6 +65,13 @@ export const Hero: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    // Hand Video Motion: plays active video loop
+    const video = videoRef.current;
+    if (video) {
+      video.play().catch(() => {});
+    }
+  }, []);
 
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -180,11 +188,22 @@ export const Hero: React.FC = () => {
           ref={handWrapperRef}
           className="w-[110%] h-[110%] -left-[5%] -top-[5%] relative transition-transform will-change-transform"
         >
-          {/* Cinematic Editorial Hand Photograph matching obsidia.webm reference */}
+          {/* Active Moving Hand Video matching obsidia.webm reference */}
+          <video
+            ref={videoRef}
+            src="./assets/video/obsidia.webm"
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-full object-cover object-[center_35%] md:object-center brightness-[0.95] contrast-[1.10]"
+          />
+
+          {/* Cinematic Editorial Hand Photograph Fallback */}
           <img
             src="./assets/images/hero-hand.jpg"
             alt="Hand with black manicured nails wearing handcrafted oxidized gothic silver and garnet rings"
-            className="w-full h-full object-cover object-[center_35%] md:object-center brightness-[0.95] contrast-[1.10] select-none"
+            className="w-full h-full object-cover object-[center_35%] md:object-center brightness-[0.95] contrast-[1.10] select-none absolute inset-0 -z-10"
             loading="eager"
             draggable={false}
           />

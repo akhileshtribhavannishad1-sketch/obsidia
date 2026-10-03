@@ -8,7 +8,7 @@ import { PRODUCTS } from '../data/products';
 
 export const HomePage: React.FC = () => {
   return (
-    <div className="relative w-full bg-[#050505] text-[#F2EEE7] overflow-hidden">
+    <div className="relative w-full bg-[#050505] text-[#F2EEE7] overflow-x-clip">
       {/* Hero 100vh with Hand Motion */}
       <Hero />
 

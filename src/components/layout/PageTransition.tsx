@@ -31,10 +31,10 @@ export const PageTransition: React.FC<{ children: React.ReactNode }> = ({ childr
   }, [location, displayLocation]);
 
   return (
-    <div className="relative w-full overflow-hidden">
-      {/* Editorial Luxury Curtain: Slides from UP to DOWN */}
+    <>
+      {/* Editorial Luxury Curtain: Slides from UP to DOWN on route change */}
       <div
-        className={`fixed inset-0 z-[9990] pointer-events-none transition-transform duration-300 ease-[cubic-bezier(0.76,0,0.24,1)] ${
+        className={`fixed inset-0 z-[9990] pointer-events-none transition-transform duration-350 ease-[cubic-bezier(0.76,0,0.24,1)] ${
           transitionStage === 'idle'
             ? '-translate-y-full'
             : transitionStage === 'sliding-down'
@@ -54,17 +54,11 @@ export const PageTransition: React.FC<{ children: React.ReactNode }> = ({ childr
         </div>
       </div>
 
-      {/* Page Content with smooth downward drift */}
-      <div
-        className={`w-full transition-all duration-300 ease-out ${
-          transitionStage === 'sliding-down'
-            ? 'opacity-40 translate-y-4'
-            : 'opacity-100 translate-y-0'
-        }`}
-      >
+      {/* Page Content: Clean container without persistent transform or overflow so GSAP ScrollTrigger pinning works perfectly */}
+      <div className={`w-full transition-opacity duration-200 ${transitionStage === 'sliding-down' ? 'opacity-30' : 'opacity-100'}`}>
         {children}
       </div>
-    </div>
+    </>
   );
 };
 
