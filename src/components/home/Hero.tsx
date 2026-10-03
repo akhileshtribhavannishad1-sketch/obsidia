@@ -66,22 +66,10 @@ export const Hero: React.FC = () => {
   };
 
   useEffect(() => {
-    // Hand Video Animation: plays once on entry and stops at the final iconic hand pose
+    // Hand Video Animation: plays continuously, showcasing full hand gestures, rings, and lighting
     const video = videoRef.current;
     if (video) {
-      const handleTimeUpdate = () => {
-        // Stop cleanly at the end of the gesture (approx 2.95s - 3.0s)
-        if (video.currentTime >= 2.95) {
-          video.pause();
-        }
-      };
-
-      video.addEventListener('timeupdate', handleTimeUpdate);
       video.play().catch(() => {});
-
-      return () => {
-        video.removeEventListener('timeupdate', handleTimeUpdate);
-      };
     }
   }, []);
 
@@ -205,6 +193,7 @@ export const Hero: React.FC = () => {
             ref={videoRef}
             src="./assets/video/obsidia.webm"
             autoPlay
+            loop
             muted
             playsInline
             className="w-full h-full object-cover object-[center_35%] md:object-center brightness-[0.88] contrast-[1.08]"
