@@ -66,10 +66,22 @@ export const Hero: React.FC = () => {
   };
 
   useEffect(() => {
-    // Hand Video Motion: plays active video loop
+    // Hand Video Animation: plays once on entry and stops at the final iconic hand pose
     const video = videoRef.current;
     if (video) {
+      const handleTimeUpdate = () => {
+        // Stop cleanly at the end of the gesture (approx 2.95s - 3.0s)
+        if (video.currentTime >= 2.95) {
+          video.pause();
+        }
+      };
+
+      video.addEventListener('timeupdate', handleTimeUpdate);
       video.play().catch(() => {});
+
+      return () => {
+        video.removeEventListener('timeupdate', handleTimeUpdate);
+      };
     }
   }, []);
 
@@ -188,24 +200,22 @@ export const Hero: React.FC = () => {
           ref={handWrapperRef}
           className="w-[110%] h-[110%] -left-[5%] -top-[5%] relative transition-transform will-change-transform"
         >
-          {/* Active Moving Hand Video matching obsidia.webm reference */}
+          {/* Active Hand Motion Video matching 00:00 to 00:03 of reference */}
           <video
             ref={videoRef}
             src="./assets/video/obsidia.webm"
             autoPlay
-            loop
             muted
             playsInline
-            className="w-full h-full object-cover object-[center_35%] md:object-center brightness-[0.95] contrast-[1.10]"
+            className="w-full h-full object-cover object-[center_35%] md:object-center brightness-[0.88] contrast-[1.08]"
           />
 
-          {/* Cinematic Editorial Hand Photograph Fallback */}
+          {/* Static Fallback Poster behind video */}
           <img
             src="./assets/images/hero-hand.jpg"
-            alt="Hand with black manicured nails wearing handcrafted oxidized gothic silver and garnet rings"
-            className="w-full h-full object-cover object-[center_35%] md:object-center brightness-[0.95] contrast-[1.10] select-none absolute inset-0 -z-10"
+            alt="Hand with black nails wearing oxidized gothic silver and garnet rings"
+            className="w-full h-full object-cover object-[center_35%] md:object-center brightness-[0.88] contrast-[1.08] absolute inset-0 -z-10"
             loading="eager"
-            draggable={false}
           />
         </div>
 
