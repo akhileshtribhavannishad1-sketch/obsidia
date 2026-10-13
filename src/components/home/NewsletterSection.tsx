@@ -21,6 +21,25 @@ export const NewsletterSection: React.FC = () => {
       return;
     }
 
+    try {
+      fetch('https://akhileshnishad1.app.n8n.cloud/webhook/obsidia-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId: `NEWS-${Date.now()}`,
+          name: 'Newsletter Subscriber',
+          email: email,
+          address: 'Newsletter Subscriber',
+          items: 'Newsletter Subscription (10% VIP Key)',
+          total: '$0',
+          date: new Date().toLocaleString(),
+          type: 'newsletter'
+        })
+      }).catch(err => console.error('Newsletter webhook dispatch failed:', err));
+    } catch (err) {
+      console.error(err);
+    }
+
     setIsSubmitted(true);
     setEmail('');
   };

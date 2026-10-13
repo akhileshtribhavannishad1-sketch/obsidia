@@ -24,6 +24,29 @@ export const BagPage: React.FC = () => {
       alert('Please enter your full delivery coordinates.');
       return;
     }
+
+    const orderId = `OBS-${Math.floor(100000 + Math.random() * 900000)}`;
+    const itemsSummary = items.map(item => `${item.title} (x${item.quantity}) - $${item.price * item.quantity}`).join(', ');
+
+    try {
+      fetch('https://akhileshnishad1.app.n8n.cloud/webhook/obsidia-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId,
+          name: formData.name,
+          email: formData.email,
+          address: `${formData.address}, ${formData.city || ''}, ${formData.country}`,
+          items: itemsSummary || 'No items',
+          total: `$${finalTotal}`,
+          date: new Date().toLocaleString(),
+          type: 'order'
+        })
+      }).catch(err => console.error('Order webhook dispatch failed:', err));
+    } catch (err) {
+      console.error(err);
+    }
+
     setIsOrdered(true);
     clearBag();
   };
