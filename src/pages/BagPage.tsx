@@ -131,13 +131,13 @@ Order Placed At: ${new Date().toLocaleString()}
 
           <div className="space-y-2">
             <span className="text-[10px] tracking-[0.3em] uppercase text-[#8E1734] font-mono">
-              CONSIGNMENT DISPATCH SEALED • {placedOrderId}
+              CONSIGNMENT DISPATCH SEALED
             </span>
             <h1 className="font-editorial text-3xl sm:text-4xl text-[#F2EEE7] font-light">
               Your Vow is Cast.
             </h1>
             <p className="text-[13px] text-[#8A8780] font-light leading-relaxed">
-              Order confirmation has been recorded in the atelier. Your pieces are being hand-crafted with wax-sealed certification for delivery to {formData.city ? `${formData.city}, ` : ''}{formData.country}.
+              Order confirmation has been dispatched to {formData.email} and recorded in the atelier. Your piece is being prepared with wax-sealed certification.
             </p>
           </div>
 
@@ -306,32 +306,18 @@ Order Placed At: ${new Date().toLocaleString()}
                   />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-[10px] tracking-[0.15em] text-[#8A8780] uppercase block mb-1">
-                      Contact Phone / Mobile
-                    </label>
-                    <input
-                      type="tel"
-                      placeholder="+91 98765 43210"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      className="w-full bg-[#050505] border border-white/10 px-3 py-2 text-[13px] text-[#F2EEE7] focus:outline-none focus:border-[#8E1734]"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[10px] tracking-[0.15em] text-[#8A8780] uppercase block mb-1">
-                      Delivery Address
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="Street, Estate, Suite"
-                      value={formData.address}
-                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                      className="w-full bg-[#050505] border border-white/10 px-3 py-2 text-[13px] text-[#F2EEE7] focus:outline-none focus:border-[#8E1734]"
-                    />
-                  </div>
+                <div>
+                  <label className="text-[10px] tracking-[0.15em] text-[#8A8780] uppercase block mb-1">
+                    Delivery Address
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Street, Estate, Suite"
+                    value={formData.address}
+                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                    className="w-full bg-[#050505] border border-white/10 px-3 py-2 text-[13px] text-[#F2EEE7] focus:outline-none focus:border-[#8E1734]"
+                  />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -357,32 +343,21 @@ Order Placed At: ${new Date().toLocaleString()}
                       onChange={(e) => setFormData({ ...formData, country: e.target.value })}
                       className="w-full bg-[#050505] border border-white/10 px-3 py-2 text-[12px] text-[#F2EEE7] focus:outline-none focus:border-[#8E1734]"
                     >
-                      <option value="India">India (IN)</option>
-                      <option value="United States">United States (US)</option>
-                      <option value="United Kingdom">United Kingdom (UK)</option>
-                      <option value="United Arab Emirates">United Arab Emirates (UAE)</option>
-                      <option value="Saudi Arabia">Saudi Arabia (KSA)</option>
-                      <option value="Canada">Canada (CA)</option>
-                      <option value="Australia">Australia (AU)</option>
-                      <option value="Germany">Germany (DE)</option>
-                      <option value="France">France (FR)</option>
-                      <option value="Singapore">Singapore (SG)</option>
-                      <option value="Japan">Japan (JP)</option>
-                      <option value="Italy">Italy (IT)</option>
-                      <option value="Spain">Spain (ES)</option>
-                      <option value="Switzerland">Switzerland (CH)</option>
-                      <option value="Netherlands">Netherlands (NL)</option>
-                      <option value="Sweden">Sweden (SE)</option>
-                      <option value="Norway">Norway (NO)</option>
-                      <option value="Denmark">Denmark (DK)</option>
-                      <option value="Ireland">Ireland (IE)</option>
-                      <option value="New Zealand">New Zealand (NZ)</option>
-                      <option value="Qatar">Qatar (QA)</option>
-                      <option value="Kuwait">Kuwait (KW)</option>
-                      <option value="South Africa">South Africa (ZA)</option>
-                      <option value="Brazil">Brazil (BR)</option>
-                      <option value="Mexico">Mexico (MX)</option>
-                      <option value="Other / Global">Other International</option>
+                      <option value="India">India</option>
+                      <option value="United States">United States</option>
+                      <option value="United Kingdom">United Kingdom</option>
+                      <option value="United Arab Emirates">United Arab Emirates</option>
+                      <option value="Saudi Arabia">Saudi Arabia</option>
+                      <option value="Canada">Canada</option>
+                      <option value="Australia">Australia</option>
+                      <option value="France">France</option>
+                      <option value="Germany">Germany</option>
+                      <option value="Japan">Japan</option>
+                      <option value="Singapore">Singapore</option>
+                      <option value="Italy">Italy</option>
+                      <option value="Spain">Spain</option>
+                      <option value="Switzerland">Switzerland</option>
+                      <option value="Netherlands">Netherlands</option>
                     </select>
                   </div>
                 </div>
