@@ -7,12 +7,14 @@ export const BagPage: React.FC = () => {
   const { items, removeFromBag, updateQuantity, clearBag, subtotal, totalCount } = useCart();
   const [isOrdered, setIsOrdered] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [placedOrderId, setPlacedOrderId] = useState<string>('');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    phone: '',
     address: '',
     city: '',
-    country: 'United Kingdom',
+    country: 'India',
   });
 
   const shippingCost = subtotal > 500 ? 0 : 45;
@@ -31,6 +33,7 @@ export const BagPage: React.FC = () => {
 
     setIsSubmitting(true);
     const orderId = `OBS-${Math.floor(100000 + Math.random() * 900000)}`;
+    setPlacedOrderId(orderId);
 
     const itemsSummary = items
       .map(
@@ -47,6 +50,7 @@ export const BagPage: React.FC = () => {
 CUSTOMER DETAILS:
 - Name: ${formData.name}
 - Email: ${formData.email}
+- Phone: ${formData.phone || 'Not provided'}
 - Delivery Address: ${formData.address}, ${formData.city}, ${formData.country}
 
 ORDERED PIECES:
@@ -62,24 +66,54 @@ Order Placed At: ${new Date().toLocaleString()}
 =============================================
 `;
 
-    const submissionData = new FormData();
-    submissionData.append("access_key", WEB3FORMS_ACCESS_KEY);
-    submissionData.append("subject", `✦ New OBSIDIA Order: ${orderId} ($${finalTotal.toLocaleString()})`);
-    submissionData.append("from_name", "OBSIDIA Atelier Dispatch");
-    submissionData.append("name", formData.name);
-    submissionData.append("email", formData.email);
-    submissionData.append("order_id", orderId);
-    submissionData.append("total_amount", `$${finalTotal.toLocaleString()}`);
-    submissionData.append("delivery_address", `${formData.address}, ${formData.city}, ${formData.country}`);
-    submissionData.append("message", formattedMessage);
+    // 1. Web3Forms Dispatch (JSON API with Accept header)
+    const web3formsPromise = fetch("https://api.web3forms.com/submit", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
+      body: JSON.stringify({
+        access_key: WEB3FORMS_ACCESS_KEY,
+        subject: `✦ New OBSIDIA Order: ${orderId} ($${finalTotal.toLocaleString()}) - ${formData.name}`,
+        from_name: "OBSIDIA Atelier Dispatch",
+        name: formData.name,
+        email: formData.email,
+        order_id: orderId,
+        customer_name: formData.name,
+        customer_email: formData.email,
+        phone: formData.phone || "N/A",
+        total_amount: `$${finalTotal.toLocaleString()}`,
+        delivery_address: `${formData.address}, ${formData.city}, ${formData.country}`,
+        message: formattedMessage,
+      }),
+    }).catch((err) => console.warn("Web3Forms dispatch warning:", err));
+
+    // 2. FormSubmit Redundant Dispatch (direct email delivery backup to akhileshtribhavannishad1@gmail.com)
+    const formsubmitPromise = fetch("https://formsubmit.co/ajax/akhileshtribhavannishad1@gmail.com", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
+      body: JSON.stringify({
+        _subject: `✦ OBSIDIA Order Dispatch: ${orderId} ($${finalTotal.toLocaleString()}) - ${formData.name}`,
+        _template: "table",
+        _captcha: "false",
+        Order_ID: orderId,
+        Customer_Name: formData.name,
+        Customer_Email: formData.email,
+        Phone: formData.phone || "N/A",
+        Delivery_Address: `${formData.address}, ${formData.city}, ${formData.country}`,
+        Total_Amount: `$${finalTotal.toLocaleString()}`,
+        Order_Details: formattedMessage,
+      }),
+    }).catch((err) => console.warn("FormSubmit dispatch warning:", err));
 
     try {
-      await fetch("https://api.web3forms.com/submit", {
-        method: "POST",
-        body: submissionData,
-      });
+      await Promise.allSettled([web3formsPromise, formsubmitPromise]);
     } catch (err) {
-      console.warn("Order email dispatched via client browser:", err);
+      console.warn("Dispatch error:", err);
     } finally {
       setIsSubmitting(false);
       setIsOrdered(true);
@@ -97,13 +131,13 @@ Order Placed At: ${new Date().toLocaleString()}
 
           <div className="space-y-2">
             <span className="text-[10px] tracking-[0.3em] uppercase text-[#8E1734] font-mono">
-              CONSIGNMENT DISPATCH SEALED
+              CONSIGNMENT DISPATCH SEALED • {placedOrderId}
             </span>
             <h1 className="font-editorial text-3xl sm:text-4xl text-[#F2EEE7] font-light">
               Your Vow is Cast.
             </h1>
             <p className="text-[13px] text-[#8A8780] font-light leading-relaxed">
-              Order confirmation has been dispatched to {formData.email} and recorded in the atelier. Your piece is being prepared with wax-sealed certification.
+              Order confirmation has been recorded in the atelier. Your pieces are being hand-crafted with wax-sealed certification for delivery to {formData.city ? `${formData.city}, ` : ''}{formData.country}.
             </p>
           </div>
 
@@ -272,18 +306,32 @@ Order Placed At: ${new Date().toLocaleString()}
                   />
                 </div>
 
-                <div>
-                  <label className="text-[10px] tracking-[0.15em] text-[#8A8780] uppercase block mb-1">
-                    Delivery Address
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Street, Estate, Suite"
-                    value={formData.address}
-                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                    className="w-full bg-[#050505] border border-white/10 px-3 py-2 text-[13px] text-[#F2EEE7] focus:outline-none focus:border-[#8E1734]"
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] tracking-[0.15em] text-[#8A8780] uppercase block mb-1">
+                      Contact Phone / Mobile
+                    </label>
+                    <input
+                      type="tel"
+                      placeholder="+91 98765 43210"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      className="w-full bg-[#050505] border border-white/10 px-3 py-2 text-[13px] text-[#F2EEE7] focus:outline-none focus:border-[#8E1734]"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] tracking-[0.15em] text-[#8A8780] uppercase block mb-1">
+                      Delivery Address
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Street, Estate, Suite"
+                      value={formData.address}
+                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                      className="w-full bg-[#050505] border border-white/10 px-3 py-2 text-[13px] text-[#F2EEE7] focus:outline-none focus:border-[#8E1734]"
+                    />
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -309,12 +357,32 @@ Order Placed At: ${new Date().toLocaleString()}
                       onChange={(e) => setFormData({ ...formData, country: e.target.value })}
                       className="w-full bg-[#050505] border border-white/10 px-3 py-2 text-[12px] text-[#F2EEE7] focus:outline-none focus:border-[#8E1734]"
                     >
-                      <option value="United Kingdom">United Kingdom</option>
-                      <option value="United States">United States</option>
-                      <option value="France">France</option>
-                      <option value="Germany">Germany</option>
-                      <option value="Japan">Japan</option>
-                      <option value="Canada">Canada</option>
+                      <option value="India">India (IN)</option>
+                      <option value="United States">United States (US)</option>
+                      <option value="United Kingdom">United Kingdom (UK)</option>
+                      <option value="United Arab Emirates">United Arab Emirates (UAE)</option>
+                      <option value="Saudi Arabia">Saudi Arabia (KSA)</option>
+                      <option value="Canada">Canada (CA)</option>
+                      <option value="Australia">Australia (AU)</option>
+                      <option value="Germany">Germany (DE)</option>
+                      <option value="France">France (FR)</option>
+                      <option value="Singapore">Singapore (SG)</option>
+                      <option value="Japan">Japan (JP)</option>
+                      <option value="Italy">Italy (IT)</option>
+                      <option value="Spain">Spain (ES)</option>
+                      <option value="Switzerland">Switzerland (CH)</option>
+                      <option value="Netherlands">Netherlands (NL)</option>
+                      <option value="Sweden">Sweden (SE)</option>
+                      <option value="Norway">Norway (NO)</option>
+                      <option value="Denmark">Denmark (DK)</option>
+                      <option value="Ireland">Ireland (IE)</option>
+                      <option value="New Zealand">New Zealand (NZ)</option>
+                      <option value="Qatar">Qatar (QA)</option>
+                      <option value="Kuwait">Kuwait (KW)</option>
+                      <option value="South Africa">South Africa (ZA)</option>
+                      <option value="Brazil">Brazil (BR)</option>
+                      <option value="Mexico">Mexico (MX)</option>
+                      <option value="Other / Global">Other International</option>
                     </select>
                   </div>
                 </div>
