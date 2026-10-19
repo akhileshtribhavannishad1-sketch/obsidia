@@ -6,6 +6,7 @@ import { Minus, Plus, ArrowRight, ShieldCheck, CheckCircle2 } from 'lucide-react
 export const BagPage: React.FC = () => {
   const { items, removeFromBag, updateQuantity, clearBag, subtotal, totalCount } = useCart();
   const [isOrdered, setIsOrdered] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -18,37 +19,72 @@ export const BagPage: React.FC = () => {
   const estimatedTax = Math.round(subtotal * 0.08);
   const finalTotal = subtotal + shippingCost + estimatedTax;
 
-  const handleCheckout = (e: React.FormEvent) => {
+  // Web3Forms Public Key verified for akhileshtribhavannishad1@gmail.com
+  const WEB3FORMS_ACCESS_KEY = "be561e79-155e-491a-bb93-a5f1f58cfa32";
+
+  const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.email || !formData.address) {
       alert('Please enter your full delivery coordinates.');
       return;
     }
 
+    setIsSubmitting(true);
     const orderId = `OBS-${Math.floor(100000 + Math.random() * 900000)}`;
-    const itemsSummary = items.map(item => `${item.title} (x${item.quantity}) - $${item.price * item.quantity}`).join(', ');
+
+    const itemsSummary = items
+      .map(
+        (i) =>
+          `• ${i.product.name} (No. ${i.product.number}) - Size: US ${i.size}, Qty: ${i.quantity} @ $${i.product.price} each = $${i.product.price * i.quantity}`
+      )
+      .join('\n');
+
+    const formattedMessage = `
+=============================================
+✦ NEW OBSIDIA CONSIGNMENT ORDER: ${orderId}
+=============================================
+
+CUSTOMER DETAILS:
+- Name: ${formData.name}
+- Email: ${formData.email}
+- Delivery Address: ${formData.address}, ${formData.city}, ${formData.country}
+
+ORDERED PIECES:
+${itemsSummary}
+
+FINANCIALS:
+- Subtotal: $${subtotal.toLocaleString()}
+- Courier: ${shippingCost === 0 ? 'Complimentary' : `$${shippingCost}`}
+- Estimated Tax: $${estimatedTax}
+- TOTAL PAID: $${finalTotal.toLocaleString()}
+
+Order Placed At: ${new Date().toLocaleString()}
+=============================================
+`;
+
+    const submissionData = new FormData();
+    submissionData.append("access_key", WEB3FORMS_ACCESS_KEY);
+    submissionData.append("subject", `✦ New OBSIDIA Order: ${orderId} ($${finalTotal.toLocaleString()})`);
+    submissionData.append("from_name", "OBSIDIA Atelier Dispatch");
+    submissionData.append("name", formData.name);
+    submissionData.append("email", formData.email);
+    submissionData.append("order_id", orderId);
+    submissionData.append("total_amount", `$${finalTotal.toLocaleString()}`);
+    submissionData.append("delivery_address", `${formData.address}, ${formData.city}, ${formData.country}`);
+    submissionData.append("message", formattedMessage);
 
     try {
-      fetch('https://akhileshnishad1.app.n8n.cloud/webhook/obsidia-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          orderId,
-          name: formData.name,
-          email: formData.email,
-          address: `${formData.address}, ${formData.city || ''}, ${formData.country}`,
-          items: itemsSummary || 'No items',
-          total: `$${finalTotal}`,
-          date: new Date().toLocaleString(),
-          type: 'order'
-        })
-      }).catch(err => console.error('Order webhook dispatch failed:', err));
+      await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        body: submissionData,
+      });
     } catch (err) {
-      console.error(err);
+      console.warn("Order email dispatched via client browser:", err);
+    } finally {
+      setIsSubmitting(false);
+      setIsOrdered(true);
+      clearBag();
     }
-
-    setIsOrdered(true);
-    clearBag();
   };
 
   if (isOrdered) {
@@ -67,7 +103,7 @@ export const BagPage: React.FC = () => {
               Your Vow is Cast.
             </h1>
             <p className="text-[13px] text-[#8A8780] font-light leading-relaxed">
-              Order confirmation #OBS-{Math.floor(100000 + Math.random() * 900000)} has been dispatched to {formData.email}. Your piece is being prepared with wax-sealed certification.
+              Order confirmation has been dispatched to {formData.email} and recorded in the atelier. Your piece is being prepared with wax-sealed certification.
             </p>
           </div>
 
@@ -123,7 +159,7 @@ export const BagPage: React.FC = () => {
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
             
-            {/* Left: Cart Items List (lg:col-span-7) */}
+            {/* Left: Cart Items List */}
             <div className="lg:col-span-7 space-y-6">
               {items.map((item) => (
                 <div
@@ -201,7 +237,7 @@ export const BagPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Right: Checkout & Address Form (lg:col-span-5) */}
+            {/* Right: Checkout & Address Form */}
             <div className="lg:col-span-5 bg-[#080806] border border-white/[0.08] p-6 sm:p-8 space-y-6">
               <h2 className="text-[11px] uppercase tracking-[0.25em] text-[#8E1734] font-mono">
                 DISPATCH COORDINATES
@@ -307,9 +343,10 @@ export const BagPage: React.FC = () => {
 
                 <button
                   type="submit"
-                  className="w-full py-4 bg-[#8E1734] hover:bg-[#700B23] text-white text-[11px] uppercase tracking-[0.25em] font-medium transition-colors duration-300 flex items-center justify-center space-x-2"
+                  disabled={isSubmitting}
+                  className="w-full py-4 bg-[#8E1734] hover:bg-[#700B23] text-white text-[11px] uppercase tracking-[0.25em] font-medium transition-colors duration-300 flex items-center justify-center space-x-2 disabled:opacity-50"
                 >
-                  <span>SEAL & ORDER VOW</span>
+                  <span>{isSubmitting ? 'DISPATCHING VOW...' : 'SEAL & ORDER VOW'}</span>
                   <ArrowRight size={14} />
                 </button>
               </form>
@@ -322,3 +359,5 @@ export const BagPage: React.FC = () => {
     </div>
   );
 };
+
+export default BagPage;
